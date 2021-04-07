@@ -17,11 +17,9 @@ kubectl run proj5-capstone\
 # List kubernetes pods and services
 kubectl get pods
 kubectl get svc
-
 echo "Sleeping for 10 seconds while waiting for pod to come up."
 sleep 10
 
-# Step 5:
+# Step 4:
 # Forward the container port to a host
-kubectl expose deployment proj5-capstone --type=LoadBalancer --port=8080 --target-port=80
-
+kubectl port-forward proj5-capstone 8000:80
