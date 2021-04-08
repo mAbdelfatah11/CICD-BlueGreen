@@ -1,43 +1,45 @@
+## Capstone project
 
-## Project 4: Operationalizing a Machine Learning Microservice API
-
-[![mAbdelFattah99](https://circleci.com/gh/mAbdelFattah99/proj4-ml-microservice.svg?style=svg)](https://app.circleci.com/pipelines/github/mAbdelFattah99/proj4-ml-microservice)
-
+[![mAbdelFattah99](https://circleci.com/gh/mAbdelFattah99/proj5-capstone.svg?style=svg)](https://app.circleci.com/pipelines/github/mAbdelFattah99/proj5-capstone)
 
 ## Project Overview
 
-In this project, you will apply the skills you have acquired in this course to operationalize a Machine Learning Microservice API.
+It's Capstone Udacity project to actually apply DevOps engineer skills and it requires a few steps:
+-   Test project code using linting.
+-   Build and test a Docker file to containerize the application.
+-   build the image and push it to dockerhub.
+-   Create a kubernetes deployment and test it locally with minikube.
+-   Create our deployment file that is going to use the image that is in docker hub.
+-   Create a service that makes the containers publicly accessible.
+-   Create a cluster locally using minikube.
+-   Deploy the service and the deployment to the cluster locally and test that the application works.
+-   Project demonstrate implemnting docker image and kubernetes using Circleci pipeline.
+-   In this project Circleci orbs has been used:
+      - circleci/kubernetes@0.11.2
+      - circleci/aws-eks@1.0.3
+-  Create a Circleci pipeline to automate the processes:
+      - linting.
+      - building the docker image.
+      - pushing the image to dockerhub.
+      - deploying the containers to the kubernetes cluster.
 
-You are given a pre-trained, `sklearn` model that has been trained to predict housing prices in Boston according to several features, such as average rooms in a home and data about highway access, teacher-to-pupil ratios, and so on. You can read more about the data, which was initially taken from Kaggle, on [the data source site](https://www.kaggle.com/c/boston-housing). This project tests your ability to operationalize a Python flask app—in a provided file, `app.py`—that serves out predictions (inference) about housing prices through API calls. This project could be extended to any pre-trained machine learning model, such as those for image recognition and data labeling.
-
-### Project Tasks
-
-Your project goal is to operationalize this working, machine learning microservice using [kubernetes](https://kubernetes.io/), which is an open-source system for automating the management of containerized applications. In this project you will:
-
--   Test your project code using linting
--   Complete a Dockerfile to containerize this application
--   Deploy your containerized application using Docker and make a prediction
--   Improve the log statements in the source code for this application
--   Configure Kubernetes and create a Kubernetes cluster
--   Deploy a container using Kubernetes and make a prediction
--   Upload a complete Github repo with CircleCI to indicate that your code has been tested
-
-You can find a detailed [project rubric, here](https://review.udacity.com/#!/rubrics/2576/view).
-
+-  Upload a complete Github repo with CircleCI to indicate that the code has been tested.  
+---
 
 
 ### Required Files walkthrough
 
-+ `requirements.txt`: dependencies to be installed.
++ `requirements.txt`: all dependencies to be installed.
 + `app.py`: The *python* API starter source code.
-+ `model_data/boston_housing_prediction.joblib`: where the machine learning model file is stored.
-+ `Dockerfile`: defination of the container content.
 + `Makefile`: the defination of the helper commands.
-+ `output_txt_files`: required outputs are available in the this directory.
++ `Dockerfile`: defination of the container content.
++ `deployment.yml`: deployment file that is going to use the image that is in docker hub, also contains a service that makes the containers publicly accessible.
++ `config.yml`: circleci configuration file that is going to automate everything in this project.
+
 
 ---
 
-## Running instructions
+# Running service locally instructions
 
 * Create a virtualenv and activate it: `python3 -m venv .devops-proj4 && source ~/.devops-proj4/bin/activate`
 * Run `make install` to install the dependencies defined in requirements.txt file
@@ -55,6 +57,103 @@ You can find a detailed [project rubric, here](https://review.udacity.com/#!/rub
     1. Setup requirements for kubernetes such as installing minikube and hypervisor.
     2. First start your *minikube* cluster: (`minikube start`) 
     3. run script `run_kubernetes.sh` 
+    4. apply the `deployment.yml` locally that is going to make the containers publicly accessible
 
-* Run sample query: execute the `make_predictions.sh` script (`./make_predictions.sh`).
+
+---
+
+# Running service with circleci automation processes
+
+### Setup the Environment and test the application.
+
+   ```
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "requirements.txt" }}
+            - v1-dependencies-
+      - run:
+          name: install dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            make install
+            # Install hadolint
+            sudo wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64 &&\
+            sudo chmod +x /bin/hadolint
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
+      - run:
+          name: run lint
+          command: |
+            . venv/bin/activate
+            make lint 
+
+
+### Creating the infrastructure using orbs circleci/aws-eks@1.0.3
+  ```
+  aws-eks/create-cluster:
+        cluster-name: gsvcapstone
+  ```
+
+### Creating the deployment steps with aws-eks/python3 executor
+  ```
+    parameters:
+      cluster-name:
+        description: |
+          proj5-capstone1
+        type: string
+    steps:
+      - checkout
+      - kubernetes/install
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: << parameters.cluster-name >>
+          install-kubectl: true
+      - kubernetes/create-or-update-resource:
+          get-rollout-status: true
+          resource-file-path: deployment.yml
+          resource-name: deployment/proj5-capstone1
+  ```
+  
+### Update the container image using `aws-eks/update-container-image`
+  ```
+  aws-eks/update-container-image:
+    cluster-name: gsvcapstone
+    container-image-updates: gsvcapstone=proj4mlmicroservice/proj5-capstone
+    post-steps:
+        - kubernetes/delete-resource:
+            resource-names: proj5-capstone
+            resource-types: deployment
+            wait: true
+    record: true
+    requires:
+        - create-deployment
+    resource-name: deployment/proj5-capstone
+  ```
+
+### Testing the cluster steps
+  ```
+    parameters:
+      cluster-name:
+        description: |
+          proj5-capstone1
+        type: string
+    steps:
+      - kubernetes/install
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: << parameters.cluster-name >>
+      - run:
+          name: Test cluster
+          command: |
+            kubectl get svc
+            kubectl get nodes
+            kubectl get deployment
+  ```
+  
+ ### References
+ - https://circleci.com/developer/orbs/orb/circleci/kubernetes
+ - https://circleci.com/developer/orbs/orb/circleci/aws-eks
 
