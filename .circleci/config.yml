@@ -109,7 +109,7 @@ workflows:
           cluster-name: proj5-capstone1
           requires:
             - create-deployment
-      - aws-eks/delete-cluster:
-          cluster-name: proj5-capstone1
-          requires:
-            - test-cluster
+      #- aws-eks/delete-cluster:
+       #   cluster-name: proj5-capstone1
+        #  requires:
+         #   - test-cluster
