@@ -1,15 +1,15 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: proj5-capstone
+  name: proj5-capstone1
   labels:
-    app: proj5-capstone
+    app: proj5-capstone1
   namespace: default
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: proj5-capstone
+      app: proj5-capstone1
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -18,12 +18,12 @@ spec:
   template:
     metadata:
       labels:
-        app: proj5-capstone
+        app: proj5-capstone1
     spec:
       containers:
         - image: proj4mlmicroservice/proj5-capstone
           imagePullPolicy: Always
-          name: proj5-capstone
+          name: proj5-capstone1
           ports:
             - containerPort: 80
 
@@ -31,13 +31,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: proj5-capstone
+  name: proj5-capstone1
   labels:
-    app: proj5-capstone
+    app: proj5-capstone1
 spec:
   type: LoadBalancer
   selector:
-    app: proj5-capstone
+    app: proj5-capstone1
   ports:
     - port: 80
       targetPort: 80

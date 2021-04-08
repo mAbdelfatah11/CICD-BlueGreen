@@ -9,9 +9,9 @@ dockerpath=proj4mlmicroservice/proj5-capstone
 # Step 2
 # Run the Docker Hub container with kubernetes
 docker login
-kubectl run proj5-capstone\
+kubectl run proj5-capstone1\
     --image=$dockerpath\
-    --port=80 --labels app=proj5-capstone
+    --port=80 --labels app=proj5-capstone1
 
 # Step 3:
 # List kubernetes pods and services
@@ -22,4 +22,4 @@ sleep 10
 
 # Step 4:
 # Forward the container port to a host
-kubectl port-forward proj5-capstone 8000:80
+kubectl expose deployment proj5-capstone1 --type=LoadBalancer --port=8080 --target-port=80
