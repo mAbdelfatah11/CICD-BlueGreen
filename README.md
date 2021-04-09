@@ -91,15 +91,17 @@ It's Capstone Udacity project to actually apply DevOps engineer skills and it re
           command: |
             . venv/bin/activate
             make lint 
-
+   ```
 
 ### Creating the infrastructure using orbs circleci/aws-eks@1.0.3
+
   ```
   aws-eks/create-cluster:
         cluster-name: gsvcapstone
   ```
 
 ### Creating the deployment steps with aws-eks/python3 executor
+
   ```
     parameters:
       cluster-name:
@@ -119,6 +121,7 @@ It's Capstone Udacity project to actually apply DevOps engineer skills and it re
   ```
   
 ### Update the container image using `aws-eks/update-container-image`
+
   ```
   aws-eks/update-container-image:
     cluster-name: gsvcapstone
@@ -135,6 +138,7 @@ It's Capstone Udacity project to actually apply DevOps engineer skills and it re
   ```
 
 ### Testing the cluster steps
+
   ```
     parameters:
       cluster-name:
