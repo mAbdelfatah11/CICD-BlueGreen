@@ -4,7 +4,9 @@
 
 ## Project Overview
 
-It's Capstone Udacity project to actually apply DevOps engineer skills and it requires a few steps:
+In this project, I will apply CI/CD skills acquired during the DevOps learning journey at Udacity.
+
+To get things done in this project, it requires a few steps:
 -   Test project code using linting.
 -   Build and test a Docker file to containerize the application.
 -   build the image and push it to dockerhub.
